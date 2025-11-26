@@ -74,40 +74,7 @@ export default function EditHabitPage() {
     router.push("/dashboard");
   };
 
-  const handleDelete = async () => {
-  const confirmDel = confirm("Are you sure? This action cannot be undone.");
-  if (!confirmDel) return;
-
-  try {
-    // 1️⃣ ลบ completions ของ habit ก่อน
-    const { error: delCompErr } = await supabase
-      .from("completions")
-      .delete()
-      .eq("habit_id", habitId);
-
-    if (delCompErr) {
-      alert("Failed to delete completions: " + delCompErr.message);
-      return;
-    }
-
-    // 2️⃣ ลบ habit
-    const { error: delHabitErr } = await supabase
-      .from("habits")
-      .delete()
-      .eq("id", habitId);
-
-    if (delHabitErr) {
-      alert("Failed to delete habit: " + delHabitErr.message);
-      return;
-    }
-
-    alert("Habit deleted!");
-    router.push("/dashboard");
-  } catch (err) {
-    console.error(err);
-    alert("Something went wrong while deleting habit.");
-  }
-};
+  
 
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;
@@ -169,12 +136,7 @@ export default function EditHabitPage() {
           {saving ? "Saving..." : "Save Changes"}
         </button>
 
-        <button
-          onClick={handleDelete}
-          className="w-full bg-red-500 text-white p-2 rounded"
-        >
-          Delete Habit
-        </button>
+        
       </div>
     </div>
   );

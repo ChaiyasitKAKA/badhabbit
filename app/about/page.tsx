@@ -4,13 +4,16 @@ import React from 'react';
 import { Target, Heart, Eye, Shield, Brain, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import uia from '@/assets/uia.jpg';
+import kakaka from '@/assets/kakaka.jpg';
+import m69 from '@/assets/m69.jpg'
 
 export default function AboutUs() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-green-50 to-teal-100 flex flex-col items-center justify-center p-4 md:p-6 font-sans relative overflow-y-auto">
+    <div className="min-h-screen bg-linear-to-br from-yellow-50 via-green-50 to-teal-100 flex flex-col items-center justify-center p-4 md:p-6 font-sans relative overflow-y-auto">
       
       {/* Background Decorations */}
-      <div className="absolute inset-0 bg-[radial-gradient(#0f766e_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-20 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(#0f766e_1.5px,transparent_1.5px)] bg-size-[24px_24px] opacity-20 pointer-events-none"></div>
       
       {/* Animated Blobs */}
       <div className="absolute top-0 -left-4 w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob pointer-events-none"></div>
@@ -23,33 +26,40 @@ export default function AboutUs() {
 
         {/* NAVBAR */}
         <nav className="flex flex-wrap justify-between items-center mb-16">
-           <Link href="/" className="text-2xl font-extrabold flex items-center gap-2 group hover:opacity-80 transition-opacity">
-             <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-teal-600">
-               Habbit
-             </span>
-           </Link>
+        <Link href="/" className="text-2xl font-extrabold flex items-center gap-2 group hover:opacity-80 transition-opacity">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-teal-600">
+            Habbit
+            </span>
+        </Link>
 
-           <div className="flex items-center space-x-2 md:space-x-6 text-sm font-bold text-gray-700">
+        <div className="flex items-center space-x-2 md:space-x-6 text-sm font-bold text-gray-700">
             <Link href="/" className="hover:text-green-800 transition-colors relative group py-1">
-              Home
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-green-600 transition-all group-hover:w-full"></span>
+                Home
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-green-600 transition-all group-hover:w-full"></span>
             </Link>
 
             <Link href="/about" className="text-green-800 transition-colors relative group py-1">
-              About Us
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-green-600 transition-all"></span>
+                About Us
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-green-600 transition-all"></span>
             </Link>
             
             <div className="hidden md:flex gap-3 ml-4">
-                <button className="px-5 py-2 rounded-xl border-2 border-gray-800 text-gray-800 font-bold hover:bg-gray-800 hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5">
+                <Link 
+                    href="/login" 
+                    className="px-5 py-2 rounded-xl border-2 border-gray-800 text-gray-800 font-bold hover:bg-gray-800 hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5"
+                >
                     Log In
-                </button>
-                <button className="px-5 py-2 bg-gray-900 text-white rounded-xl shadow-lg hover:bg-black hover:shadow-xl hover:shadow-gray-900/30 hover:-translate-y-0.5 transition-all duration-300">
+                </Link>
+
+                <Link 
+                    href="/singup" 
+                    className="px-5 py-2 bg-gray-900 text-white rounded-xl shadow-lg hover:bg-black hover:shadow-xl hover:shadow-gray-900/30 hover:-translate-y-0.5 transition-all duration-300"
+                >
                     Sign Up
-                </button>
+                </Link>
             </div>
-          </div>
-        </nav>
+        </div>
+    </nav>
 
         {/* HERO TITLE */}
         <div className="text-center space-y-6 max-w-4xl mx-auto mb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -57,7 +67,7 @@ export default function AboutUs() {
                 Our Story
             </span>
             <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight">
-            เปลี่ยนนิสัยเล็กๆ <br className="hidden md:block" /> ให้เป็น<span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-teal-600">ความสำเร็จที่ยิ่งใหญ่</span>
+            เปลี่ยนนิสัยเล็กๆ <br className="hidden md:block" /> ให้เป็น<span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-teal-600">ความสำเร็จที่ยิ่งใหญ่</span>
             </h1>
             <p className="text-xl text-gray-600 font-medium max-w-2xl mx-auto leading-relaxed">
             วินัยสร้างได้ เริ่มต้นที่นี่... มารู้จักตัวตนและความตั้งใจของเรา
@@ -76,7 +86,7 @@ export default function AboutUs() {
                 </p>
             </div>
 
-            <div className="bg-gradient-to-br from-green-50 to-teal-50 p-8 rounded-3xl border border-white/60 shadow-lg hover:shadow-xl transition-shadow duration-300 group">
+            <div className="bg-linear-to-br from-green-50 to-teal-50 p-8 rounded-3xl border border-white/60 shadow-lg hover:shadow-xl transition-shadow duration-300 group">
                 <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center mb-6 text-green-600 group-hover:scale-110 transition-transform">
                     <Heart size={24} />
                 </div>
@@ -164,7 +174,7 @@ export default function AboutUs() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                 <div className="flex flex-col items-center group">
                     <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl mb-6 transform group-hover:scale-105 transition-transform duration-300 bg-green-100">
-                         <Image src="" alt="Felix" width={128} height={128} className="w-full h-full object-cover" />
+                         <Image src={kakaka} alt="ka" width={128} height={128} className="w-full h-full object-cover" />
                     </div>
                     <h3 className="font-bold text-gray-900 text-xl">คุณก้า</h3>
                     <p className="text-green-600 text-sm font-bold mb-3 tracking-wide uppercase">Founder & CEO</p>
@@ -173,7 +183,7 @@ export default function AboutUs() {
 
                 <div className="flex flex-col items-center group">
                      <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl mb-6 transform group-hover:scale-105 transition-transform duration-300 bg-yellow-100">
-                         <Image src="" alt="Aneka" width={128} height={128} className="w-full h-full object-cover" />
+                         <Image src={uia} alt="fluek" width={128} height={128} className="w-full h-full object-cover" />
                     </div>
                     <h3 className="font-bold text-gray-900 text-xl">คุณฟลุ๊ค</h3>
                     <p className="text-green-600 text-sm font-bold mb-3 tracking-wide uppercase">Lead Developer</p>
@@ -182,7 +192,7 @@ export default function AboutUs() {
 
                 <div className="flex flex-col items-center group">
                      <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl mb-6 transform group-hover:scale-105 transition-transform duration-300 bg-teal-100">
-                         <Image src="" alt="Jane" width={128} height={128} className="w-full h-full object-cover" />
+                         <Image src={m69} alt="emm" width={128} height={128} className="w-full h-full object-cover" />
                     </div>
                     <h3 className="font-bold text-gray-900 text-xl">คุณเอ็ม</h3>
                     <p className="text-green-600 text-sm font-bold mb-3 tracking-wide uppercase">UX/UI Designer</p>

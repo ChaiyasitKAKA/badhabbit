@@ -133,13 +133,41 @@ export default function Accounts() {
     );
   }
 
+  const inputClassName = "w-full px-4 py-3 bg-white/90 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 text-gray-700 placeholder-gray-400 shadow-sm hover:shadow-md";
+
   return (
-    <div className="flex min-h-screen"  >
+    <div className="flex min-h-screen bg-gradient-to-br from-yellow-50 via-green-50 to-teal-100 font-sans relative overflow-hidden"  >
+
+      {/* === BACKGROUND LAYERS === */}
+      {/* 1. Radial Pattern */}
+      <div className="absolute inset-0 bg-[radial-gradient(#0f766e_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-20 pointer-events-none z-0">
+
+      </div>
+      
+      {/* 2. Blobs */}
+      <div className="absolute top-0 -left-4 w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob pointer-events-none z-0">
+      </div>
+      
+      <div className="absolute top-0 -right-4 w-96 h-96 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000 pointer-events-none z-0">
+
+      </div>
+      <div className="absolute -bottom-32 left-20 w-96 h-96 bg-green-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-4000 pointer-events-none z-0">
+
+      </div>
+      <div className="absolute bottom-40 right-10 w-80 h-80 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-1000 pointer-events-none z-0">
+
+      </div>
+
       <Sider />
 
+      {/* Main Content */}
+      <main className="flex-1 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 md:pl-72 transition-all duration-300 relative z-10">
+
+      </main>
+
       <main className="flex-1 min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 uppercase tracking-wide mb-8">
+        <div className="w-full max-w-2xl bg-white/80 backdrop-blur-md p-8 rounded-lg shadow-xl border border-white/60">
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 uppercase tracking-wide mb-8 text-center">
             User Account
           </h1>
 
@@ -203,7 +231,9 @@ export default function Accounts() {
             </div>
           </form>
         </div>
+        </div>
       </main>
     </div>
+
   );
 }
