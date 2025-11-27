@@ -176,7 +176,7 @@ export default function AboutUs() {
                     <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl mb-6 transform group-hover:scale-105 transition-transform duration-300 bg-green-100">
                          <Image src={kakaka} alt="ka" width={128} height={128} className="w-full h-full object-cover" />
                     </div>
-                    <h3 className="font-bold text-gray-900 text-xl">คุณก้า</h3>
+                    <h3 className="font-bold text-gray-900 text-xl">ก้า</h3>
                     <p className="text-green-600 text-sm font-bold mb-3 tracking-wide uppercase">Founder & CEO</p>
                     <p className="text-gray-500 text-sm text-center italic px-4 leading-relaxed">วินัยคือสะพานเชื่อมระหว่างเป้าหมายและความสำเร็จ</p>
                 </div>
@@ -185,7 +185,7 @@ export default function AboutUs() {
                      <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl mb-6 transform group-hover:scale-105 transition-transform duration-300 bg-yellow-100">
                          <Image src={uia} alt="fluek" width={128} height={128} className="w-full h-full object-cover" />
                     </div>
-                    <h3 className="font-bold text-gray-900 text-xl">คุณฟลุ๊ค</h3>
+                    <h3 className="font-bold text-gray-900 text-xl">ฟลุ๊ค</h3>
                     <p className="text-green-600 text-sm font-bold mb-3 tracking-wide uppercase">Lead Developer</p>
                     <p className="text-gray-500 text-sm text-center italic px-4 leading-relaxed">Code ที่ดีคือนิสัยที่ดีในการคิดอย่างเป็นระบบ</p>
                 </div>
@@ -194,7 +194,7 @@ export default function AboutUs() {
                      <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl mb-6 transform group-hover:scale-105 transition-transform duration-300 bg-teal-100">
                          <Image src={m69} alt="emm" width={128} height={128} className="w-full h-full object-cover" />
                     </div>
-                    <h3 className="font-bold text-gray-900 text-xl">คุณเอ็ม</h3>
+                    <h3 className="font-bold text-gray-900 text-xl">เอ็ม</h3>
                     <p className="text-green-600 text-sm font-bold mb-3 tracking-wide uppercase">UX/UI Designer</p>
                     <p className="text-gray-500 text-sm text-center italic px-4 leading-relaxed">ความงามไม่ใช่แค่สิ่งที่ตาเห็น แต่คือความรู้สึกที่ได้ใช้</p>
                 </div>

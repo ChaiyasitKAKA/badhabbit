@@ -162,10 +162,7 @@ export default function Accounts() {
 
       {/* Main Content */}
       <main className="flex-1 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 md:pl-72 transition-all duration-300 relative z-10">
-
-      </main>
-
-      <main className="flex-1 min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
+      
         <div className="w-full max-w-2xl bg-white/80 backdrop-blur-md p-8 rounded-lg shadow-xl border border-white/60">
           <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 uppercase tracking-wide mb-8 text-center">
             User Account
@@ -226,14 +223,10 @@ export default function Accounts() {
               >
                 {isSaving ? 'Saving...' : 'Save Profile'}
               </button>
-
-              
             </div>
           </form>
         </div>
-        </div>
       </main>
     </div>
-
   );
 }

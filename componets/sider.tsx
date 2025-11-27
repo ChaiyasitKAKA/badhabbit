@@ -77,7 +77,7 @@ const Sidebar = () => {
     }
 
     return (
-        <div className="w-64 bg-gray-900 text-white flex flex-col h-screen p-4 shadow-2xl border-r border-gray-800">
+        <div className="top-0 left-0 z-50 w-64 bg-gray-900 text-white flex flex-col h-screen p-4 shadow-2xl border-r border-gray-800">
             
             <div className="flex items-center mb-10 py-2">
                 <Repeat className="w-6 h-6 text-emerald-400 rotate-45 mr-3"/>

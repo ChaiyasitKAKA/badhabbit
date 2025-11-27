@@ -112,7 +112,7 @@ const inputClassName = "w-full px-4 py-3 bg-white border border-gray-200 rounded
               <label className="block text-sm font-medium text-gray-700 mb-1">Habit Title</label>
               <input
                 type="text"
-                placeholder="e.g., Morning Jog, Drink Water"
+                placeholder="Enter your Habit "
                 className={inputClassName}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
