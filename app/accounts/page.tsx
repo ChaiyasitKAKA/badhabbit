@@ -1,6 +1,6 @@
 'use client'
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const dynamic = 'force-dynamic'; 
+export const revalidate = false;        
 
 import Sider from '@/componets/sider'
 import { supabase } from '@/utils/supabaseclient'
