@@ -1,18 +1,30 @@
 'use client';
+
 import { useState } from "react";
 import { supabase } from "@/utils/supabaseclient";
 import { useRouter } from "next/navigation";
-import Sider from '@/componets/sider'
-import { Flame, Clock, Target, CheckCircle, ChevronDown, LayoutDashboard, Plus, Settings, LogOut, Menu, X } from "lucide-react";
+import Sider from '@/componets/sider'; // ตรวจสอบว่าชื่อโฟลเดอร์คือ components หรือ componets
+import { 
+  Flame, 
+  Clock, 
+  Target, 
+  CheckCircle, 
+  ChevronDown, 
+  Plus, 
+  X 
+} from "lucide-react";
 
 export default function AddHabit() {
+  const router = useRouter();
+  
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [color, setColor] = useState("#6366f1");
+  const [color, setColor] = useState("#6366f1"); // Default Indigo
   const [icon, setIcon] = useState("check");
   const [goalFrequency, setGoalFrequency] = useState("Daily");
+  
+  // UI States
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const [success, setSuccess] = useState(false);
 
   const iconOptions = [
@@ -23,71 +35,67 @@ export default function AddHabit() {
   ];
 
   const handleAddHabit = async () => {
-    if (!title) {
+    if (!title.trim()) {
       alert("Please enter a habit title!");
       return;
     }
     setLoading(true);
 
-    const user = (await supabase.auth.getSession()).data.session?.user;
+    // ใช้ getUser แทน getSession เพื่อความปลอดภัยและแม่นยำกว่า
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       alert("Not logged in");
+      setLoading(false);
       return;
     }
 
     const { error } = await supabase.from("habits").insert([
       {
         title,
-        goal_frequency: goalFrequency,
         description,
         color,
         icon,
+        goal_frequency: goalFrequency,
         user_id: user.id,
       }
     ]);
 
-    setLoading(false);
-
     if (error) {
       console.error(error);
       alert("Failed to add habit!");
+      setLoading(false);
     } else {
       setSuccess(true);
+      setLoading(false);
+      // Reset Form & Redirect
       setTimeout(() => {
           setSuccess(false);
           router.push("/dashboard");
           setTitle("");
           setDescription("");
-      }, 2000);
+      }, 1500);
     }
   };
 
-const inputClassName = "w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 text-gray-700 placeholder-gray-400 shadow-md hover:shadow-lg hover:-translate-y-0.5";
+  const inputClassName = "w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 text-gray-700 placeholder-gray-400 shadow-md hover:shadow-lg hover:-translate-y-0.5";
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-yellow-50 via-green-50 to-teal-100 font-sans relative overflow-hidden">
       
       {/* === BACKGROUND LAYERS === */}
-      {/* 1. Radial Pattern */}
       <div className="absolute inset-0 bg-[radial-gradient(#0f766e_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-20 pointer-events-none z-0"></div>
       
-      {/* 2. Blobs (Now visible behind Sider too because Sider is transparent) */}
       <div className="absolute top-0 -left-4 w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob pointer-events-none z-0"></div>
       <div className="absolute top-0 -right-4 w-96 h-96 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000 pointer-events-none z-0"></div>
       <div className="absolute -bottom-32 left-20 w-96 h-96 bg-green-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-4000 pointer-events-none z-0"></div>
       <div className="absolute bottom-40 right-10 w-80 h-80 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-1000 pointer-events-none z-0"></div>
 
-      {/* Sidebar (Solid White) */}
+      {/* Sidebar */}
       <Sider />
 
-      {/* Mobile Menu Button */}
-      <div className="md:hidden absolute top-4 left-4 z-50 p-2 bg-white/80 rounded-lg shadow-sm cursor-pointer hover:bg-white transition-colors">
-        <Menu size={24} className="text-gray-600" />
-      </div>
-
-      {/* Main Content Container */}
-      <main className="flex-1 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 md:pl-72 transition-all duration-300 relative z-10">
+      {/* Main Content */}
+      <main className="flex-1 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 md:pl-72 relative z-10">
         
         {/* Card Container */}
         <div className="w-full max-w-2xl bg-white/80 backdrop-blur-md p-8 rounded-lg shadow-xl relative border border-white/60">
@@ -112,7 +120,7 @@ const inputClassName = "w-full px-4 py-3 bg-white border border-gray-200 rounded
               <label className="block text-sm font-medium text-gray-700 mb-1">Habit Title</label>
               <input
                 type="text"
-                placeholder="Enter your Habit "
+                placeholder="Enter your Habit"
                 className={inputClassName}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -215,7 +223,11 @@ const inputClassName = "w-full px-4 py-3 bg-white border border-gray-200 rounded
                     <span className="flex items-center justify-center gap-2">
                       <CheckCircle size={20} /> Saved!
                     </span>
-                  ) : "Create Habit"}
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                       <Plus size={20} /> Create Habit
+                    </span>
+                  )}
                 </button>
             </div>
 

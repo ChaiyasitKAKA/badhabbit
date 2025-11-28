@@ -4,14 +4,26 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabaseclient";
 import Sider from "@/componets/sider";
-import { Flame, Clock, Target, CheckCircle, CheckSquare } from "lucide-react";
+import { 
+  Flame, 
+  Clock, 
+  Target, 
+  CheckCircle, 
+  CheckSquare, 
+  Plus, 
+  Calendar,
+  Edit3,
+  Trash2,
+  Trophy,
+  Menu
+} from "lucide-react";
 import { format } from "date-fns"; 
 
 interface Habit {
   id: string;
   title: string;
   description: string | null;
-  color: string | null;
+  color: string | null; // ✅ รับค่าสีมาด้วย
   icon: string | null;
   goal_frequency: string | null;
   created_at: string;
@@ -26,331 +38,239 @@ const iconMap: Record<string, React.ElementType> = {
 
 export default function DashboardPage() {
   const [habits, setHabits] = useState<Habit[]>([]);
-  const [completedHabits, setCompletedHabits] = useState<Set<string>>(new Set()); // 🟢 เก็บ ID ของที่ทำเสร็จแล้ววันนี้
+  const [completedHabits, setCompletedHabits] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [checkingIn, setCheckingIn] = useState<string | null>(null); // เก็บ ID ตัวที่กำลังหมุน Loading
-  const [userId, setUserId] = useState<string | null>(null); // เก็บ User ID
+  const [checkingIn, setCheckingIn] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [streaks, setStreaks] = useState<Record<string, number>>({});
   const router = useRouter();
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchData = async () => {
+      setLoading(true);
 
-      // 1. หา User ID ก่อน
-      const { data: { user } } = await supabase.auth.getUser();
-      setUserId(user?.id || null);
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
 
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-      // 2. ดึงรายการ Habits
-      const { data: habitsData, error: habitsError } = await supabase
-        .from('habits')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // ดึงข้อมูล Habits (รวม column color)
+      const { data: habitsData, error: habitsError } = await supabase
+        .from('habits')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      if (habitsError) console.log("Error fetching habits:", habitsError);
-      const loadedHabits = habitsData || [];
-      setHabits(loadedHabits);
+      if (habitsError) console.log("Error fetching habits:", habitsError);
+      setHabits(habitsData || []);
 
-      // 3. ดึงข้อมูลว่า "วันนี้" ทำอะไรเสร็จไปแล้วบ้าง?
-      const todayDate = format(new Date(), 'yyyy-MM-dd');
-      const { data: completionsData, error: completionsError } = await supabase
-        .from('completions')
-        .select('habit_id')
-        .eq('user_id', user.id)
-        .eq('completion_date', todayDate);
+      const todayDate = format(new Date(), 'yyyy-MM-dd');
+      const { data: completionsData } = await supabase
+        .from('completions')
+        .select('habit_id')
+        .eq('user_id', user.id)
+        .eq('completion_date', todayDate);
 
-      if (!completionsError) {
-        const completedSet = new Set((completionsData || []).map(c => c.habit_id));
-        setCompletedHabits(completedSet as Set<string>);
-      }
+      if (completionsData) {
+        const completedSet = new Set(completionsData.map(c => c.habit_id));
+        setCompletedHabits(completedSet as Set<string>);
+      }
       
-      // 4. ⭐ เพิ่มส่วนนี้: คำนวณ Streak เริ่มต้นสำหรับนิสัยทั้งหมด ⭐
-      const allStreaks: Record<string, number> = {};
-      
-      // ดึง completions ทั้งหมดของผู้ใช้ (ไม่ต้องดึงทีละ Habit)
-      const { data: allCompletions, error: allCompError } = await supabase
+      // คำนวณ Streak (เหมือนเดิม)
+      const allStreaks: Record<string, number> = {};
+      const { data: allCompletions } = await supabase
         .from('completions')
         .select('habit_id, completion_date')
         .eq('user_id', user.id);
         
-      if (!allCompError && allCompletions) {
-          // จัดกลุ่มวันที่ทำสำเร็จตาม habitId
-          const completionsByHabit: Record<string, string[]> = allCompletions.reduce((acc, completion) => {
+      if (allCompletions) {
+          const completionsByHabit = allCompletions.reduce((acc, completion) => {
               const habitId = completion.habit_id;
-              if (!acc[habitId]) {
-                  acc[habitId] = [];
-              }
+              if (!acc[habitId]) acc[habitId] = [];
               acc[habitId].push(completion.completion_date);
               return acc;
           }, {} as Record<string, string[]>);
 
-          // คำนวณ streak สำหรับแต่ละ Habit
-          loadedHabits.forEach(habit => {
+          habitsData?.forEach(habit => {
               const dates = completionsByHabit[habit.id] || [];
-              const calculatedStreak = calculateStreak(dates);
-              allStreaks[habit.id] = calculatedStreak;
+              allStreaks[habit.id] = calculateStreak(dates);
           });
-          
           setStreaks(allStreaks);
       }
+      setLoading(false);
+    };
 
-      setLoading(false);
-    };
+    fetchData();
+  }, []);
 
-    fetchData();
-  }, []);
+  const handleCheckin = async (habitId: string) => {
+    if (!userId) return;
+    setCheckingIn(habitId);
 
- const handleCheckin = async (habitId: string) => {
-  if (!userId) return;
-
-  setCheckingIn(habitId); // เริ่ม Loading
-
-  try {
-    const todayDate = format(new Date(), 'yyyy-MM-dd');
-
-    // Insert completion
-    const { error } = await supabase
-      .from('completions')
-      .insert({
-        habit_id: habitId,
-        user_id: userId,
-        completion_date: todayDate,
-      });
-
-    if (error) {
-      console.log('Error saving completion:', error);
-      alert('Failed to check in.');
-    } else {
-      // อัปเดต UI ให้ทันที
-      setCompletedHabits(prev => new Set(prev).add(habitId));
-
-      // ดึง completions ของ habit ตัวนี้ทั้งหมด
-      const { data: habitCompletions, error: compError } = await supabase
+    try {
+      const todayDate = format(new Date(), 'yyyy-MM-dd');
+      const { error } = await supabase
         .from('completions')
-        .select('completion_date')
-        .eq('user_id', userId)
-        .eq('habit_id', habitId);
+        .insert({ habit_id: habitId, user_id: userId, completion_date: todayDate });
 
-      if (!compError && habitCompletions) {
-        const dates = habitCompletions.map(c => c.completion_date);
-        const newStreak = calculateStreak(dates);
-        setStreaks(prev => ({ ...prev, [habitId]: newStreak }));
+      if (error) {
+        alert('Failed to check in.');
+      } else {
+        setCompletedHabits(prev => new Set(prev).add(habitId));
+        // Update local streak immediately for better UX
+        setStreaks(prev => ({
+            ...prev,
+            [habitId]: (prev[habitId] || 0) + 1
+        }));
       }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setCheckingIn(null);
     }
-  } catch (err) {
-    console.log(err);
-    alert('Something went wrong.');
-  } finally {
-    setCheckingIn(null);
-  }
-};
+  };
 
-// ฟังก์ชันคำนวณ streak
-const calculateStreak = (completionDates: string[]) => {
-  if (completionDates.length === 0) return 0;
-
-  const dates = completionDates
-    .map(d => new Date(d))
-    .sort((a, b) => b.getTime() - a.getTime());
-
-  let streak = 1;
-  let prevDate = dates[0];
-
-  for (let i = 1; i < dates.length; i++) {
-    const diff = (prevDate.getTime() - dates[i].getTime()) / (1000 * 60 * 60 * 24);
-    if (diff === 1) {
-      streak++;
-      prevDate = dates[i];
-    } else {
-      break;
+  const calculateStreak = (completionDates: string[]) => {
+    if (completionDates.length === 0) return 0;
+    const dates = completionDates.map(d => new Date(d)).sort((a, b) => b.getTime() - a.getTime());
+    let streak = 1;
+    let prevDate = dates[0];
+    for (let i = 1; i < dates.length; i++) {
+      const diff = (prevDate.getTime() - dates[i].getTime()) / (1000 * 60 * 60 * 24);
+      if (diff === 1) { streak++; prevDate = dates[i]; } else break;
     }
-  }
+    return streak;
+  };
 
-  return streak;
-};
-
-
- const handleDelete = async (habitId: string) => {
-  const confirmDel = confirm("Are you sure? This action cannot be undone.");
-  if (!confirmDel) return;
-
-  setCheckingIn(habitId);
-
-  try {
-    // 1️⃣ ลบ completions ของ habit
-    const { error: delCompErr } = await supabase
-      .from("completions")
-      .delete()
-      .eq("habit_id", habitId);
-
-    if (delCompErr) {
-      alert("Failed to delete completions: " + delCompErr.message);
-      return;
+  const handleDelete = async (habitId: string) => {
+    if (!confirm("Delete this habit?")) return;
+    setCheckingIn(habitId);
+    try {
+      await supabase.from("completions").delete().eq("habit_id", habitId);
+      await supabase.from("habit_stat_tb").delete().eq("habit_id", habitId); // ถ้ามีตารางนี้
+      await supabase.from("habits").delete().eq("id", habitId);
+      setHabits(prev => prev.filter(h => h.id !== habitId));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCheckingIn(null);
     }
+  };
 
-    // 2️⃣ ลบ habit_stat_tb ของ habit
-    const { error: delStatErr } = await supabase
-      .from("habit_stat_tb")
-      .delete()
-      .eq("habit_id", habitId);
-
-    if (delStatErr) {
-      alert("Failed to delete habit stats: " + delStatErr.message);
-      return;
-    }
-
-    // 3️⃣ ลบ habit เอง
-    const { error: delHabitErr } = await supabase
-      .from("habits")
-      .delete()
-      .eq("id", habitId);
-
-    if (delHabitErr) {
-      alert("Failed to delete habit: " + delHabitErr.message);
-      return;
-    }
-
-    // อัปเดต UI
-    setHabits(prev => prev.filter(h => h.id !== habitId));
-    setCompletedHabits(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(habitId);
-      return newSet;
-    });
-
-    alert("Habit deleted!");
-    router.push("/dashboard");
-  } catch (err) {
-    console.error(err);
-    alert("Something went wrong while deleting habit.");
-  } finally {
-    setCheckingIn(null);
-  }
-};
-
-
-  if (loading) return <p className="p-4">Loading...</p>;
-
-const inputClassName = "w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 text-gray-700 placeholder-gray-400 shadow-md hover:shadow-lg hover:-translate-y-0.5";
+  if (loading) return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-yellow-50 via-green-50 to-teal-100 font-sans relative overflow-hidden">
-
-      {/* === BACKGROUND LAYERS === */}
-      {/* 1. Radial Pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(#0f766e_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-20 pointer-events-none z-0"></div>
-      
-      {/* 2. Blobs (Now visible behind Sider too because Sider is transparent) */}
-      <div className="absolute top-0 -left-4 w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob pointer-events-none z-0"></div>
-      <div className="absolute top-0 -right-4 w-96 h-96 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000 pointer-events-none z-0"></div>
-      <div className="absolute -bottom-32 left-20 w-96 h-96 bg-green-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-4000 pointer-events-none z-0"></div>
-      <div className="absolute bottom-40 right-10 w-80 h-80 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-1000 pointer-events-none z-0"></div>
-
+    <div className="flex min-h-screen bg-gradient-to-br from-yellow-50 via-green-50 to-teal-100 font-sans overflow-hidden">
       <Sider />
 
-      <main className="flex-1 p-6 bg-gray-50">
-        <div className="p-6 space-y-4">
+      {/* Mobile Menu */}
+      <div className="md:hidden absolute top-4 left-4 z-50 p-2 bg-white/80 rounded-lg shadow-sm">
+        <Menu size={24} className="text-gray-600" />
+      </div>
 
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Your Habits</h1>
+      <main className="flex-1 p-4 sm:p-8 md:pl-72 relative z-10 overflow-y-auto h-screen">
+        <div className="max-w-6xl mx-auto space-y-8 pb-20">
+
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/60 backdrop-blur-md p-6 rounded-2xl border border-white/50 shadow-sm">
+            <div>
+              <h1 className="text-3xl font-extrabold text-gray-800">Dashboard</h1>
+              <p className="text-gray-500 mt-1 flex items-center gap-2">
+                <Calendar size={16} /> {format(new Date(), "EEEE, d MMMM yyyy")}
+              </p>
+            </div>
             <button
               onClick={() => router.push("/habits")}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-xl shadow hover:bg-indigo-700 transition"
+              className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl shadow-lg hover:bg-gray-800 transition-all font-bold"
             >
-              Add Habit
+              <Plus size={20} /> New Habit
             </button>
           </div>
 
-
-          {habits.length === 0 && (
-            <p className="text-gray-500">No habits found.</p>
-          )}
-
-          <div className="grid md:grid-cols-2 gap-4">
+          {/* Habits Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {habits.map((habit) => {
               const Icon = iconMap[habit.icon || "check"] || CheckCircle;
               const isCompleted = completedHabits.has(habit.id); 
               const isLoadingThis = checkingIn === habit.id; 
+              const currentStreak = streaks[habit.id] || 0;
+              
+              // ✅ กำหนดสี: ถ้าไม่มีให้ใช้สีเขียวเป็นค่าเริ่มต้น
+              const themeColor = habit.color || "#10b981"; 
 
               return (
                 <div
                   key={habit.id}
-                  className={`p-4 border rounded-xl shadow-sm bg-white transition-all ${isCompleted ? 'border-green-400 bg-green-50' : ''}`}
+                  className={`relative group flex flex-col justify-between p-6 rounded-3xl backdrop-blur-md bg-white/80 border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl
+                    ${isCompleted ? 'opacity-80' : ''}
+                  `}
+                  style={{ borderColor: isCompleted ? 'transparent' : `${themeColor}40`, borderWidth: '1px' }} 
                 >
-                  <div className="flex justify-between items-start">
-                    {/* ส่วนแสดงข้อมูล Habit */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Icon className={`w-6 h-6 ${isCompleted ? 'text-green-600' : 'text-gray-800'}`} />
-                        <h2 className={`text-lg font-semibold ${isCompleted ? 'text-green-700 line-through' : ''}`}>
-                            {habit.title}
-                        </h2>
-                      </div>
-
-                      {habit.description && (
-                        <p className="text-gray-600 mb-2">{habit.description}</p>
-                      )}
-
-                      {habit.goal_frequency && (
-                        <p className="text-sm text-blue-600">
-                          Frequency: {habit.goal_frequency}
-                        </p>
-                      )}
-                      <p className="text-sm text-purple-600">
-  🔥 Streak: {streaks[habit.id] || 0} day{streaks[habit.id] > 1 ? 's' : ''}
-</p>
-
-
-                      <p className="text-xs text-gray-400 mt-2">
-                        Created: {new Date(habit.created_at).toLocaleDateString()}
-                      </p>
+                  {/* Top Row */}
+                  <div className="flex justify-between items-start mb-4">
+                    <div 
+                        className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm transition-colors duration-300`}
+                        style={{ 
+                            backgroundColor: isCompleted ? '#f3f4f6' : themeColor,
+                            color: isCompleted ? '#9ca3af' : '#ffffff'
+                        }}
+                    >
+                        <Icon className="w-6 h-6" />
                     </div>
 
-                    {/* ปุ่ม Action */}
-                    <div className="flex flex-col gap-2">
-                         {/* ปุ่ม Check-in */}
-                        <button
-                            onClick={() => handleCheckin(habit.id)}
-                            disabled={isCompleted || isLoadingThis}
-                            className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1 transition
-                                ${isCompleted 
-                                    ? 'bg-green-100 text-green-700 cursor-default' 
-                                    : 'bg-gray-100 hover:bg-green-500 hover:text-white text-gray-700'
-                                }
-                            `}
-                        >
-                            {isLoadingThis ? (
-                                <span>Saving...</span>
-                            ) : isCompleted ? (
-                                <>
-                                    <CheckCircle size={16} /> Done
-                                </>
-                            ) : (
-                                <>
-                                    <CheckSquare size={16} /> Check-in
-                                </>
-                            )}
-                        </button>
-                        
-                        {/* ปุ่ม Edit เดิม */}
-                        <a
-                            href={`/edithabits/${habit.id}`}
-                            className="text-sm px-3 py-1 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 text-center"
-                        >
-                            Edit
-                        </a>
-                        <button
-  onClick={() => handleDelete(habit.id)}
-  className="text-sm px-3 py-1 bg-red-100 border border-red-300 text-red-700 rounded-lg hover:bg-red-200"
->
-  Delete
-</button>
+                    {/* Edit/Delete Menu (Hover to show) */}
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => router.push(`/edithabits/${habit.id}`)} className="p-2 bg-white rounded-lg text-gray-400 hover:text-blue-500 shadow-sm"><Edit3 size={16} /></button>
+                        <button onClick={() => handleDelete(habit.id)} className="p-2 bg-white rounded-lg text-gray-400 hover:text-red-500 shadow-sm"><Trash2 size={16} /></button>
                     </div>
+                  </div>
+
+                  {/* Text Content */}
+                  <div className="mb-6">
+                    <h2 className={`text-xl font-bold mb-1 ${isCompleted ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
+                        {habit.title}
+                    </h2>
+                    <p className="text-sm text-gray-500 line-clamp-2 h-10">
+                        {habit.description}
+                    </p>
+                  </div>
+
+                  {/* Stats & Button */}
+                  <div className="mt-auto space-y-4">
+                    
+                    {/* Badge Stats */}
+                    <div className="flex items-center gap-3">
+                         <div className="px-3 py-1 rounded-full bg-orange-50 text-orange-600 text-xs font-bold flex items-center gap-1 border border-orange-100">
+                            <Flame size={12} className="fill-orange-500" />
+                            {currentStreak} Day Streak
+                         </div>
+                    </div>
+
+                    {/* ✅ Check-in Button (ใช้สี Theme) */}
+                    <button
+                        onClick={() => handleCheckin(habit.id)}
+                        disabled={isCompleted || isLoadingThis}
+                        className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-md text-white`}
+                        style={{ 
+                            // ✅ ถ้าเสร็จแล้วเป็นสีเทา, ถ้ายังไม่เสร็จให้ใช้สี habit.color
+                            backgroundColor: isCompleted ? '#d1d5db' : themeColor,
+                            boxShadow: isCompleted ? 'none' : `0 4px 12px ${themeColor}60` // เงาสีตามปุ่ม
+                        }}
+                    >
+                        {isLoadingThis ? (
+                             <span className="animate-pulse">Saving...</span>
+                        ) : isCompleted ? (
+                            <>
+                                <CheckCircle size={20} /> Completed
+                            </>
+                        ) : (
+                            <>
+                                <CheckSquare size={20} /> Check-in
+                            </>
+                        )}
+                    </button>
                   </div>
                 </div>
               );

@@ -2,11 +2,8 @@
 
 import React from 'react';
 import { Target, Heart, Eye, Shield, Brain, ArrowRight } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
-import uia from '@/assets/uia.jpg';
-import kakaka from '@/assets/kakaka.jpg';
-import m69 from '@/assets/m69.jpg'
+
 
 export default function AboutUs() {
   return (
@@ -160,43 +157,6 @@ export default function AboutUs() {
                     <p className="text-gray-600 leading-relaxed">
                         ออกแบบตามหลักจิตวิทยา สร้าง Loop ของนิสัยให้คุณทำต่อเนื่องได้โดยไม่ฝืน
                     </p>
-                </div>
-            </div>
-        </div>
-
-        {/* TEAM SECTION */}
-        <div className="mb-24 pt-10 border-t border-gray-200/50">
-            <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-4">Meet the Team</h2>
-                <p className="text-xl text-gray-600">ผู้อยู่เบื้องหลังความสำเร็จ</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                <div className="flex flex-col items-center group">
-                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl mb-6 transform group-hover:scale-105 transition-transform duration-300 bg-green-100">
-                         <Image src={kakaka} alt="ka" width={128} height={128} className="w-full h-full object-cover" />
-                    </div>
-                    <h3 className="font-bold text-gray-900 text-xl">ก้า</h3>
-                    <p className="text-green-600 text-sm font-bold mb-3 tracking-wide uppercase">Founder & CEO</p>
-                    <p className="text-gray-500 text-sm text-center italic px-4 leading-relaxed">วินัยคือสะพานเชื่อมระหว่างเป้าหมายและความสำเร็จ</p>
-                </div>
-
-                <div className="flex flex-col items-center group">
-                     <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl mb-6 transform group-hover:scale-105 transition-transform duration-300 bg-yellow-100">
-                         <Image src={uia} alt="fluek" width={128} height={128} className="w-full h-full object-cover" />
-                    </div>
-                    <h3 className="font-bold text-gray-900 text-xl">ฟลุ๊ค</h3>
-                    <p className="text-green-600 text-sm font-bold mb-3 tracking-wide uppercase">Lead Developer</p>
-                    <p className="text-gray-500 text-sm text-center italic px-4 leading-relaxed">Code ที่ดีคือนิสัยที่ดีในการคิดอย่างเป็นระบบ</p>
-                </div>
-
-                <div className="flex flex-col items-center group">
-                     <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl mb-6 transform group-hover:scale-105 transition-transform duration-300 bg-teal-100">
-                         <Image src={m69} alt="emm" width={128} height={128} className="w-full h-full object-cover" />
-                    </div>
-                    <h3 className="font-bold text-gray-900 text-xl">เอ็ม</h3>
-                    <p className="text-green-600 text-sm font-bold mb-3 tracking-wide uppercase">UX/UI Designer</p>
-                    <p className="text-gray-500 text-sm text-center italic px-4 leading-relaxed">ความงามไม่ใช่แค่สิ่งที่ตาเห็น แต่คือความรู้สึกที่ได้ใช้</p>
                 </div>
             </div>
         </div>

@@ -1,12 +1,13 @@
 'use client';
-import { Home, Plus, Settings, User, LogOut, Repeat } from 'lucide-react'; 
+
+import { Home, Plus, Settings, User, LogOut, Repeat, PieChart } from 'lucide-react'; 
 import { supabase } from '@/utils/supabaseclient'
 import React, { useState, useEffect } from 'react';
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import Link from 'next/link'; // ✅ Import Link
 
 // Interface สำหรับข้อมูลโปรไฟล์
-interface profile {
+interface Profile {
     Name: string;
     user_image_url: string;
 }
@@ -14,22 +15,20 @@ interface profile {
 // ข้อมูลเมนู
 const navItems = [
     { name: 'Dashboard', icon: Home, link: '/dashboard' },
-    { name: 'New Habit', icon: Plus, link: '/habits' },
+    { name: 'New Habit', icon: Plus, link: '/habits' }, // ตรวจสอบว่า route นี้คือหน้า AddHabit
     { name: 'Profile Settings', icon: User, link: '/accounts' },
 ];
 
 const Sidebar = () => {
-    const router = useRouter();    
+    const router = useRouter();    
     const pathname = usePathname();
 
-    const [profile, setProfile] = useState<profile | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
     // ฟังก์ชัน Sign Out
     const signOut = async () => {
-      
-      const { error } = await supabase.auth.signOut();
+      await supabase.auth.signOut();
       router.push("/");
     };
 
@@ -37,104 +36,116 @@ const Sidebar = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const {data: {session}, error: sessionError } = await supabase.auth.getSession();
-                if (sessionError || !session?.user) {
-                    // Redirect ถ้าไม่มี session หรือ user
-                    window.location.href = '/singup'; 
+                // ✅ ใช้ getUser แทน getSession เพื่อความปลอดภัย
+                const { data: { user }, error: userError } = await supabase.auth.getUser();
+                
+                if (userError || !user) {
+                    router.push('/signup'); // ✅ แก้คำผิด singup -> signup
                     return;
                 }
-                const user = session.user;
 
-                const {data: profileData, error: profileError } = await supabase
+                const { data: profileData, error: profileError } = await supabase
                     .from('user_tb') 
-                    .select('Name, user_image_url')   
+                    .select('Name, user_image_url')   
                     .eq('id', user.id)
                     .single();
                     
-                    if (profileError && profileError.code !== 'PGRST116') { // 'PGRST116' คือ No rows found
-                        throw profileError;
-                    }
-                    setProfile(profileData || null);
-            }catch (error: unknown) {
-                let errorMassage = 'An unexpected error occurred.';
-                if (error instanceof Error) {
-                    errorMassage = error.message;
+                if (profileError && profileError.code !== 'PGRST116') {
+                    console.error(profileError);
                 }
-                setError(errorMassage);
-            }finally {
+                
+                setProfile(profileData || null);
+            } catch (error) {
+                console.error("Error fetching profile:", error);
+            } finally {
                 setLoading(false);
             }
         };
         fetchData();
-    }, []);
+    }, [router]);
 
+    // Loading State แบบ Skeleton หรือ Spinner เล็กๆ
     if (loading) {
-        return <div className="w-64 bg-gray-900 flex items-center justify-center h-screen"><p className="text-white">Loading...</p></div>;
-    }
-
-    if (error) {
-        return <div className="w-64 bg-gray-900 flex items-center justify-center h-screen"><p className="text-red-400 p-4">Error loading profile.</p></div>;
+        return (
+            <div className="hidden md:flex w-72 bg-gray-900 flex-col items-center justify-center h-screen fixed left-0 top-0 border-r border-gray-800">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+            </div>
+        );
     }
 
     return (
-        <div className="top-0 left-0 z-50 w-64 bg-gray-900 text-white flex flex-col h-screen p-4 shadow-2xl border-r border-gray-800">
+        // ✅ เพิ่ม hidden md:flex เพื่อซ่อนบนมือถือ และ fixed เพื่อให้ติดขอบจอ
+        <aside className="hidden md:flex fixed top-0 left-0 z-50 w-72 bg-gray-900 text-gray-100 flex-col h-screen p-5 shadow-2xl border-r border-gray-800 transition-all duration-300">
             
-            <div className="flex items-center mb-10 py-2">
-                <Repeat className="w-6 h-6 text-emerald-400 rotate-45 mr-3"/>
+            {/* Logo Section */}
+            <div className="flex items-center mb-10 px-2 py-3">
+                <div className="p-2 bg-emerald-500/10 rounded-lg mr-3">
+                    <Repeat className="w-6 h-6 text-emerald-500 rotate-45"/>
+                </div>
                 <h1 className="text-2xl font-extrabold tracking-wider text-white">
-                    HABIT <span className="text-emerald-400">TRACKER</span>
+                    HABIT <span className="text-emerald-500">TRACKER</span>
                 </h1>
             </div>
             
-           
-            <div className="mb-10 p-3 rounded-xl bg-gray-800/50 hover:bg-gray-800 transition">
-               
-                <div className="w-14 h-14 rounded-full overflow-hidden mb-2 mx-auto">
+            {/* User Profile Card */}
+            <div className="mb-8 p-4 rounded-2xl bg-gray-800/40 border border-gray-700/50 backdrop-blur-sm flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-emerald-500/50 shadow-lg">
                     <img
                         src={profile?.user_image_url || 'https://placehold.co/60x60/374151/D1D5DB?text=U'}
                         alt="Profile"
-                        className="w-full h-full object-cover border-4 border-emerald-500 shadow-md"
+                        className="w-full h-full object-cover"
                     />
                 </div>
-                
-                <p className="text-base font-medium text-center text-emerald-400">
-                    {profile?.Name || 'Guest User'}
-                </p>
-                <p className="text-xs text-gray-500 text-center">
-                    Welcome back!
-                </p>
+                <div className="overflow-hidden">
+                    <p className="text-sm font-bold text-emerald-400 truncate">
+                        {profile?.Name || 'User'}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                        Welcome back
+                    </p>
+                </div>
             </div>
 
-            <nav className="flex-1 space-y-1">
-                {navItems.map((item) => (
-                    <a
-                        key={item.name}
-                        href={item.link}
-                        
-                        className={`
-                            flex items-center py-3 px-4 rounded-lg text-base font-medium transition duration-200 
-                            ${pathname === item.link 
-                                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/50' 
-                                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                            }
-                        `}
-                    >
-                        <item.icon className="w-5 h-5 mr-3" />
-                        {item.name}
-                    </a>
-                ))}
+            {/* Navigation */}
+            <nav className="flex-1 space-y-2">
+                {navItems.map((item) => {
+                    const isActive = pathname === item.link;
+                    return (
+                        <Link
+                            key={item.name}
+                            href={item.link}
+                            className={`
+                                group flex items-center py-3.5 px-4 rounded-xl text-sm font-medium transition-all duration-200 relative overflow-hidden
+                                ${isActive 
+                                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20' 
+                                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                }
+                            `}
+                        >
+                            {/* Active Indicator Line */}
+                            {isActive && (
+                                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-white/30 rounded-r-full" />
+                            )}
+                            
+                            <item.icon className={`w-5 h-5 mr-3 transition-colors ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-emerald-400'}`} />
+                            {item.name}
+                        </Link>
+                    );
+                })}
             </nav>
 
+            {/* Logout Button */}
+            <div className="pt-4 border-t border-gray-800">
+                <button
+                    onClick={signOut}
+                    className="w-full flex items-center justify-center py-3 px-4 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all duration-200 font-medium group"
+                >
+                    <LogOut className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+                    Sign Out
+                </button>
+            </div>
             
-            <button
-                onClick={signOut}
-                className="mt-6 flex items-center justify-center py-3 px-4 rounded-lg bg-red-700 hover:bg-red-600 transition font-medium cursor-pointer text-white shadow-md shadow-red-700/50"
-            >
-                <LogOut className="w-5 h-5 mr-2" />
-                Sign Out
-            </button>
-            
-        </div>
+        </aside>
     );
 };
 
