@@ -10,9 +10,7 @@ import {
   Target, 
   CheckCircle, 
   ChevronDown, 
-  Settings, // เปลี่ยนจาก Plus เป็น Settings
-  X, 
-  Trash2, // เพิ่มไอคอนถังขยะ
+  Settings,
   ArrowLeft 
 } from "lucide-react";
 
@@ -30,7 +28,7 @@ export default function EditHabit() {
   // States
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false); // เพิ่ม state สำหรับการลบ
+  const [deleting, setDeleting] = useState(false); 
   const [success, setSuccess] = useState(false);
 
   const iconOptions = [
@@ -40,7 +38,7 @@ export default function EditHabit() {
     { key: "clock", icon: Clock },
   ];
 
-  // Load Data
+  
   useEffect(() => {
     if (!habitId) return;
 
@@ -69,7 +67,7 @@ export default function EditHabit() {
     fetchHabit();
   }, [habitId, router]);
 
-  // Handle Update
+  
   const handleSave = async () => {
     if (!title) return alert("Please enter a habit title!");
 
@@ -100,17 +98,17 @@ export default function EditHabit() {
     }
   };
 
-  // Handle Delete (New Feature)
+  
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this habit? This action cannot be undone.")) return;
 
     setDeleting(true);
 
     try {
-        // 1. ลบข้อมูลการ check-in ของ habit นี้ก่อน (เพื่อป้องกัน foreign key error)
+        
         await supabase.from("completions").delete().eq("habit_id", habitId);
         
-        // 2. ลบ habit จริง
+       
         const { error } = await supabase.from("habits").delete().eq("id", habitId);
 
         if (error) throw error;

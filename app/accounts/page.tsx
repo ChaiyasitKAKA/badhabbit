@@ -5,7 +5,7 @@ import { supabase } from '@/utils/supabaseclient'
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Camera, Save, X, Loader2, Lock } from 'lucide-react'; // เพิ่มไอคอน
+import { User, Mail, Camera, Save, X, Loader2, Lock } from 'lucide-react'; 
 
 interface AccountProps {
   id: string;
@@ -128,7 +128,7 @@ export default function Accounts() {
     }
   };
 
-  // ใช้ Loading Style เดียวกับหน้าอื่น
+  
   if (loading) {
     return (
         <div className="flex min-h-screen items-center justify-center bg-green-50">
@@ -137,7 +137,7 @@ export default function Accounts() {
     );
   }
 
-  // ใช้ Input Style เดียวกับหน้าอื่น
+  
   const inputClassName = "w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 text-gray-700 placeholder-gray-400 shadow-sm hover:shadow-md";
 
   return (

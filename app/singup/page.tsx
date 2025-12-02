@@ -27,8 +27,7 @@ export default function SignupPage() {
 
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    
-    //preview Picture 
+     
     const file = e.target.files?.[0];
     setImageFile(file || null);
     if (file) {

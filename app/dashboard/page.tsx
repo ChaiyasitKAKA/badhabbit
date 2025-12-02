@@ -14,7 +14,6 @@ import {
   Calendar,
   Edit3,
   Trash2,
-  Trophy,
   Menu
 } from "lucide-react";
 import { format } from "date-fns"; 
@@ -23,7 +22,7 @@ interface Habit {
   id: string;
   title: string;
   description: string | null;
-  color: string | null; // ✅ รับค่าสีมาด้วย
+  color: string | null; 
   icon: string | null;
   goal_frequency: string | null;
   created_at: string;
@@ -57,7 +56,6 @@ export default function DashboardPage() {
         return;
       }
 
-      // ดึงข้อมูล Habits (รวม column color)
       const { data: habitsData, error: habitsError } = await supabase
         .from('habits')
         .select('*')
@@ -119,7 +117,6 @@ export default function DashboardPage() {
         alert('Failed to check in.');
       } else {
         setCompletedHabits(prev => new Set(prev).add(habitId));
-        // Update local streak immediately for better UX
         setStreaks(prev => ({
             ...prev,
             [habitId]: (prev[habitId] || 0) + 1
@@ -197,7 +194,7 @@ export default function DashboardPage() {
               const isLoadingThis = checkingIn === habit.id; 
               const currentStreak = streaks[habit.id] || 0;
               
-              // ✅ กำหนดสี: ถ้าไม่มีให้ใช้สีเขียวเป็นค่าเริ่มต้น
+              
               const themeColor = habit.color || "#10b981"; 
 
               return (
@@ -248,13 +245,13 @@ export default function DashboardPage() {
                          </div>
                     </div>
 
-                    {/* ✅ Check-in Button (ใช้สี Theme) */}
+                    {/*  Check-in Button (ใช้สี Theme) */}
                     <button
                         onClick={() => handleCheckin(habit.id)}
                         disabled={isCompleted || isLoadingThis}
                         className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-md text-white`}
                         style={{ 
-                            // ✅ ถ้าเสร็จแล้วเป็นสีเทา, ถ้ายังไม่เสร็จให้ใช้สี habit.color
+                           
                             backgroundColor: isCompleted ? '#d1d5db' : themeColor,
                             boxShadow: isCompleted ? 'none' : `0 4px 12px ${themeColor}60` // เงาสีตามปุ่ม
                         }}

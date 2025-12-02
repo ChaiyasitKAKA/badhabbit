@@ -4,18 +4,18 @@ import { Home, Plus, Settings, User, LogOut, Repeat, PieChart } from 'lucide-rea
 import { supabase } from '@/utils/supabaseclient'
 import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from "next/navigation";
-import Link from 'next/link'; // ✅ Import Link
+import Link from 'next/link'; 
 
-// Interface สำหรับข้อมูลโปรไฟล์
+
 interface Profile {
     Name: string;
     user_image_url: string;
 }
 
-// ข้อมูลเมนู
+
 const navItems = [
     { name: 'Dashboard', icon: Home, link: '/dashboard' },
-    { name: 'New Habit', icon: Plus, link: '/habits' }, // ตรวจสอบว่า route นี้คือหน้า AddHabit
+    { name: 'New Habit', icon: Plus, link: '/habits' }, 
     { name: 'Profile Settings', icon: User, link: '/accounts' },
 ];
 
@@ -26,21 +26,21 @@ const Sidebar = () => {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
-    // ฟังก์ชัน Sign Out
+    
     const signOut = async () => {
       await supabase.auth.signOut();
       router.push("/");
     };
 
-    // ฟังก์ชันดึงข้อมูลโปรไฟล์
+    
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // ✅ ใช้ getUser แทน getSession เพื่อความปลอดภัย
+                
                 const { data: { user }, error: userError } = await supabase.auth.getUser();
                 
                 if (userError || !user) {
-                    router.push('/signup'); // ✅ แก้คำผิด singup -> signup
+                    router.push('/signup'); 
                     return;
                 }
 
@@ -64,7 +64,7 @@ const Sidebar = () => {
         fetchData();
     }, [router]);
 
-    // Loading State แบบ Skeleton หรือ Spinner เล็กๆ
+    
     if (loading) {
         return (
             <div className="hidden md:flex w-72 bg-gray-900 flex-col items-center justify-center h-screen fixed left-0 top-0 border-r border-gray-800">
@@ -74,7 +74,7 @@ const Sidebar = () => {
     }
 
     return (
-        // ✅ เพิ่ม hidden md:flex เพื่อซ่อนบนมือถือ และ fixed เพื่อให้ติดขอบจอ
+        
         <aside className="hidden md:flex fixed top-0 left-0 z-50 w-72 bg-gray-900 text-gray-100 flex-col h-screen p-5 shadow-2xl border-r border-gray-800 transition-all duration-300">
             
             {/* Logo Section */}

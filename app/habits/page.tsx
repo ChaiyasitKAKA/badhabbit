@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/utils/supabaseclient";
 import { useRouter } from "next/navigation";
-import Sider from '@/componets/sider'; // ตรวจสอบว่าชื่อโฟลเดอร์คือ components หรือ componets
+import Sider from '@/componets/sider';
 import { 
   Flame, 
   Clock, 
@@ -19,11 +19,11 @@ export default function AddHabit() {
   
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [color, setColor] = useState("#6366f1"); // Default Indigo
+  const [color, setColor] = useState("#6366f1"); 
   const [icon, setIcon] = useState("check");
   const [goalFrequency, setGoalFrequency] = useState("Daily");
   
-  // UI States
+  
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -41,7 +41,7 @@ export default function AddHabit() {
     }
     setLoading(true);
 
-    // ใช้ getUser แทน getSession เพื่อความปลอดภัยและแม่นยำกว่า
+    
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -68,7 +68,7 @@ export default function AddHabit() {
     } else {
       setSuccess(true);
       setLoading(false);
-      // Reset Form & Redirect
+      
       setTimeout(() => {
           setSuccess(false);
           router.push("/dashboard");
