@@ -108,20 +108,78 @@ export default function DashboardPage() {
     setCheckingIn(habitId);
 
     try {
-      const todayDate = format(new Date(), 'yyyy-MM-dd');
-      const { error } = await supabase
-        .from('completions')
-        .insert({ habit_id: habitId, user_id: userId, completion_date: todayDate });
+      const todayDate = format(new Date(), "yyyy-MM-dd");
 
-      if (error) {
-        alert('Failed to check in.');
-      } else {
-        setCompletedHabits(prev => new Set(prev).add(habitId));
-        setStreaks(prev => ({
-            ...prev,
-            [habitId]: (prev[habitId] || 0) + 1
-        }));
+      // Insert into completions
+      const { error: compError } = await supabase
+        .from("completions")
+        .insert({
+          habit_id: habitId,
+          user_id: userId,
+          completion_date: todayDate,
+        });
+
+      if (compError) {
+        console.log("Completion error:", compError);
+        return;
       }
+
+      // Reload completions for this habit
+      const { data: habitCompletions } = await supabase
+        .from("completions")
+        .select("completion_date")
+        .eq("habit_id", habitId)
+        .eq("user_id", userId);
+
+      const dates = (habitCompletions || []).map((c) => c.completion_date);
+
+      const currentStreak = calculateStreak(dates);
+
+      // Calculate max streak
+      const maxStreak = calculateMaxStreak(dates);
+
+      // Calculate success rate
+      const totalDays = getTotalDays(dates);
+      const successRate = totalDays > 0 ? dates.length / totalDays : 0;
+
+      // Does habit_stat_tb already exist?
+      const { data: existingStat } = await supabase
+        .from("habit_stat_tb")
+        .select("*")
+        .eq("habit_id", habitId)
+        .limit(1)
+        .maybeSingle();
+
+      if (existingStat) {
+        // UPDATE habit_stat_tb
+        await supabase.from("habit_stat_tb")
+          .update({
+            current_streak: currentStreak,
+            max_streak: maxStreak,
+            success_rate: successRate,
+            last_completion_date: todayDate,
+          })
+          .eq("habit_id", habitId);
+      } else {
+        // INSERT new row
+        await supabase.from("habit_stat_tb")
+          .insert({
+            habit_id: habitId,
+            current_streak: currentStreak,
+            max_streak: maxStreak,
+            success_rate: successRate,
+            last_completion_date: todayDate,
+          });
+      }
+
+      // Update UI streak
+      setStreaks(prev => ({
+        ...prev,
+        [habitId]: currentStreak,
+      }));
+
+      setCompletedHabits(prev => new Set(prev).add(habitId));
+
     } catch (err) {
       console.log(err);
     } finally {
@@ -130,42 +188,87 @@ export default function DashboardPage() {
   };
 
   const calculateStreak = (completionDates: string[]) => {
-  if (completionDates.length === 0) return 0;
+    if (completionDates.length === 0) return 0;
 
-  // Normalize dates (remove time)
-  const toDay = (d: string) => {
-    const date = new Date(d);
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const toDay = (d: string) => {
+      const date = new Date(d);
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    };
+
+    const dates = completionDates
+      .map(d => toDay(d).getTime())
+      .sort((a, b) => b - a);
+
+    let streak = 1;
+    let prev = dates[0];
+
+    for (let i = 1; i < dates.length; i++) {
+      const diffDays = (prev - dates[i]) / (1000 * 60 * 60 * 24);
+
+      if (diffDays >= 1 && diffDays < 2) {
+        streak++;
+        prev = dates[i];
+      } else {
+        break;
+      }
+    }
+
+    return streak;
   };
 
-  const dates = completionDates
-    .map(d => toDay(d).getTime())
-    .sort((a, b) => b - a);
+  const calculateMaxStreak = (completionDates: string[]) => {
+    if (!completionDates || completionDates.length === 0) return 0;
 
-  let streak = 1;
-  let prev = dates[0];
+    const toDay = (d: string) => {
+      const date = new Date(d);
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    };
 
-  for (let i = 1; i < dates.length; i++) {
-    const diffDays = (prev - dates[i]) / (1000 * 60 * 60 * 24);
+    const dates = completionDates
+      .map(d => toDay(d).getTime())
+      .sort((a, b) => a - b); // oldest → newest
 
-    
-    if (diffDays >= 1 && diffDays < 2) {
-      streak++;
-      prev = dates[i];
-    } else {
-      break;
+    let maxStreak = 1;
+    let streak = 1;
+
+    for (let i = 1; i < dates.length; i++) {
+      const diff = (dates[i] - dates[i - 1]) / (1000 * 60 * 60 * 24);
+
+      if (diff >= 1 && diff < 2) {
+        streak++;
+        maxStreak = Math.max(maxStreak, streak);
+      } else {
+        streak = 1;
+      }
     }
-  }
 
-  return streak;
-};
+    return maxStreak;
+  };
+
+  const getTotalDays = (completionDates: string[]) => {
+    if (!completionDates || completionDates.length === 0) return 0;
+
+    const toDay = (d: string) => {
+      const date = new Date(d);
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    };
+
+    const dates = completionDates.map(d => toDay(d).getTime()).sort();
+
+    const first = dates[0];
+    const last = dates[dates.length - 1];
+
+    const diffDays = (last - first) / (1000 * 60 * 60 * 24);
+
+    return Math.max(1, Math.floor(diffDays) + 1);
+  };
 
   const handleDelete = async (habitId: string) => {
     if (!confirm("Delete this habit?")) return;
     setCheckingIn(habitId);
     try {
       await supabase.from("completions").delete().eq("habit_id", habitId);
-      await supabase.from("habit_stat_tb").delete().eq("habit_id", habitId); // ถ้ามีตารางนี้
+      await supabase.from("habit_stat_tb").delete().eq("habit_id", habitId);
       await supabase.from("habits").delete().eq("id", habitId);
       setHabits(prev => prev.filter(h => h.id !== habitId));
     } catch (err) {
@@ -178,7 +281,7 @@ export default function DashboardPage() {
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-yellow-50 via-green-50 to-teal-100 font-sans overflow-hidden">
+    <div className="flex min-h-screen bg-linear-to-br from-yellow-50 via-green-50 to-teal-100 font-sans overflow-hidden">
       <Sider />
 
       {/* Mobile Menu */}
@@ -212,16 +315,13 @@ export default function DashboardPage() {
               const isCompleted = completedHabits.has(habit.id); 
               const isLoadingThis = checkingIn === habit.id; 
               const currentStreak = streaks[habit.id] || 0;
-              
-              
               const themeColor = habit.color || "#10b981"; 
 
               return (
                 <div
                   key={habit.id}
                   className={`relative group flex flex-col justify-between p-6 rounded-3xl backdrop-blur-md bg-white/80 border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl
-                    ${isCompleted ? 'opacity-80' : ''}
-                  `}
+                    ${isCompleted ? 'opacity-80' : ''}`}
                   style={{ borderColor: isCompleted ? 'transparent' : `${themeColor}40`, borderWidth: '1px' }} 
                 >
                   {/* Top Row */}
@@ -236,7 +336,7 @@ export default function DashboardPage() {
                         <Icon className="w-6 h-6" />
                     </div>
 
-                    {/* Edit/Delete Menu (Hover to show) */}
+                    {/* Edit/Delete Menu */}
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => router.push(`/edithabits/${habit.id}`)} className="p-2 bg-white rounded-lg text-gray-400 hover:text-blue-500 shadow-sm"><Edit3 size={16} /></button>
                         <button onClick={() => handleDelete(habit.id)} className="p-2 bg-white rounded-lg text-gray-400 hover:text-red-500 shadow-sm"><Trash2 size={16} /></button>
@@ -264,15 +364,14 @@ export default function DashboardPage() {
                          </div>
                     </div>
 
-                    {/*  Check-in Button (ใช้สี Theme) */}
+                    {/* Check-in Button */}
                     <button
                         onClick={() => handleCheckin(habit.id)}
                         disabled={isCompleted || isLoadingThis}
                         className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-md text-white`}
                         style={{ 
-                           
                             backgroundColor: isCompleted ? '#d1d5db' : themeColor,
-                            boxShadow: isCompleted ? 'none' : `0 4px 12px ${themeColor}60` // เงาสีตามปุ่ม
+                            boxShadow: isCompleted ? 'none' : `0 4px 12px ${themeColor}60`
                         }}
                     >
                         {isLoadingThis ? (
