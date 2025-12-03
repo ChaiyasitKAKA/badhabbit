@@ -30,7 +30,7 @@ export default function Accounts() {
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !session?.user) {
-          router.push('/signup'); // ใช้ router.push แทน window.location เพื่อ UX ที่ดีกว่า
+          router.push('/signup'); 
           return;
         }
 
@@ -143,7 +143,7 @@ export default function Accounts() {
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-yellow-50 via-green-50 to-teal-100 font-sans relative overflow-hidden">
 
-      {/* === BACKGROUND LAYERS === */}
+      
       <div className="absolute inset-0 bg-[radial-gradient(#0f766e_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-20 pointer-events-none z-0"></div>
       <div className="absolute top-0 -left-4 w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob pointer-events-none z-0"></div>
       <div className="absolute top-0 -right-4 w-96 h-96 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000 pointer-events-none z-0"></div>

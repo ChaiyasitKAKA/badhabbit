@@ -76,7 +76,7 @@ export default function DashboardPage() {
         setCompletedHabits(completedSet as Set<string>);
       }
       
-      // คำนวณ Streak (เหมือนเดิม)
+      // คำนวณ Streak 
       const allStreaks: Record<string, number> = {};
       const { data: allCompletions } = await supabase
         .from('completions')
@@ -130,16 +130,35 @@ export default function DashboardPage() {
   };
 
   const calculateStreak = (completionDates: string[]) => {
-    if (completionDates.length === 0) return 0;
-    const dates = completionDates.map(d => new Date(d)).sort((a, b) => b.getTime() - a.getTime());
-    let streak = 1;
-    let prevDate = dates[0];
-    for (let i = 1; i < dates.length; i++) {
-      const diff = (prevDate.getTime() - dates[i].getTime()) / (1000 * 60 * 60 * 24);
-      if (diff === 1) { streak++; prevDate = dates[i]; } else break;
-    }
-    return streak;
+  if (completionDates.length === 0) return 0;
+
+  // Normalize dates (remove time)
+  const toDay = (d: string) => {
+    const date = new Date(d);
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   };
+
+  const dates = completionDates
+    .map(d => toDay(d).getTime())
+    .sort((a, b) => b - a);
+
+  let streak = 1;
+  let prev = dates[0];
+
+  for (let i = 1; i < dates.length; i++) {
+    const diffDays = (prev - dates[i]) / (1000 * 60 * 60 * 24);
+
+    
+    if (diffDays >= 1 && diffDays < 2) {
+      streak++;
+      prev = dates[i];
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+};
 
   const handleDelete = async (habitId: string) => {
     if (!confirm("Delete this habit?")) return;
